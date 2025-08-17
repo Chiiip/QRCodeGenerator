@@ -15,6 +15,13 @@
             margin: 0;
             background-color: #f0f0f0;
         }
+        /* Novo estilo para o contêiner principal */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px; /* Espaço entre os cards */
+        }
         .container {
             background-color: #ffffff;
             padding: 2rem;
@@ -66,48 +73,56 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+        /* Mídia query para telas menores */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column; /* Volta para a coluna em telas pequenas */
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="main-content">
+        <div class="container">
+            <h1>Gerador de QR Code</h1>
 
-    <div class="container">
-        <h1>Gerador de QR Code</h1>
+            <label for="vendedorInput">Nome do vendedor:</label>
+            <input type="text" id="vendedorInput" placeholder="Nome do vendedor">
 
-        <label for="vendedorInput">Nome do vendedor:</label>
-        <input type="text" id="vendedorInput" placeholder="Nome do vendedor">
+            <label for="nomeInput">Nome de quem irá retirar:</label>
+            <input type="text" id="nomeInput" placeholder="Nome de quem irá retirar">
 
-        <label for="nomeInput">Nome de quem irá retirar:</label>
-        <input type="text" id="nomeInput" placeholder="Nome de quem irá retirar">
+            <label for="telefoneInput">Telefone:</label>
+            <input type="text" id="telefoneInput" placeholder="Telefone">
 
-        <label for="telefoneInput">Telefone:</label>
-        <input type="text" id="telefoneInput" placeholder="Telefone">
+            <label for="quantidadeInput">Quantidade:</label>
+            <input type="text" id="quantidadeInput" placeholder="Quantidade">
+            
+            <button onclick="generateQRCode()">Gerar QR Code</button>
 
-        <label for="quantidadeInput">Quantidade:</label>
-        <input type="text" id="quantidadeInput" placeholder="Quantidade">
-        
-        <button onclick="generateQRCode()">Gerar QR Code</button>
-
-        <div id="qrcode-container">
-            <!-- O QR Code será gerado aqui -->
+            <div id="qrcode-container">
+                <!-- O QR Code será gerado aqui -->
+            </div>
         </div>
-    </div>
 
-    <div class="container qrcode-section">
-        <h1>Validar QR Code</h1>
-        <button onclick="startQrCodeReader()">Validar QR Code</button>
-        <div id="reader"></div>
-        <div id="result-text"></div>
+        <div class="container qrcode-section">
+            <h1>Validar QR Code</h1>
+            <button onclick="startQrCodeReader()">Validar QR Code</button>
+            <div id="reader"></div>
+            <div id="result-text"></div>
+        </div>
     </div>
 
     <!-- Inclui as bibliotecas -->
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <script src="https://github.com/mebjas/html5-qrcode/releases/download/v2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
 
     <script>
         // Endpoint de criação (gerador)
-        const createApiUrl = "http://3.149.27.48:8080/yakisoba/create";
+        const createApiUrl = "https://muguenbackend.ddns.net/yakisoba/create";
         // Endpoint de validação (leitor)
-        const validateApiUrl = "http://3.149.27.48:8080/yakisoba/validate/";
+        const validateApiUrl = "https://muguenbackend.ddns.net/yakisoba/validate/";
 
         // Função para gerar o QR Code (lógica anterior)
         async function generateQRCode() {
