@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador e Validador de QR Code</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        input, button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .qrcode-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        #reader {
+            width: 300px;
+            height: 300px;
+        }
+        #result-text {
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .failure {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Gerador de QR Code</h1>
+
+        <label for="vendedorInput">Nome do vendedor:</label>
+        <input type="text" id="vendedorInput" placeholder="Nome do vendedor">
+
+        <label for="nomeInput">Nome de quem irá retirar:</label>
+        <input type="text" id="nomeInput" placeholder="Nome de quem irá retirar">
+
+        <label for="telefoneInput">Telefone:</label>
+        <input type="text" id="telefoneInput" placeholder="Telefone">
+
+        <label for="quantidadeInput">Quantidade:</label>
+        <input type="text" id="quantidadeInput" placeholder="Quantidade">
+        
+        <button onclick="generateQRCode()">Gerar QR Code</button>
+
+        <div id="qrcode-container">
+            <!-- O QR Code será gerado aqui -->
+        </div>
+    </div>
+
+    <div class="container qrcode-section">
+        <h1>Validar QR Code</h1>
+        <button onclick="startQrCodeReader()">Validar QR Code</button>
+        <div id="reader"></div>
+        <div id="result-text"></div>
+    </div>
+
+    <!-- Inclui as bibliotecas -->
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://github.com/mebjas/html5-qrcode/releases/download/v2.3.8/html5-qrcode.min.js"></script>
+
+    <script>
+        // Endpoint de criação (gerador)
+        const createApiUrl = "http://3.149.27.48:8080/yakisoba/create";
+        // Endpoint de validação (leitor)
+        const validateApiUrl = "http://3.149.27.48:8080/yakisoba/validate/";
+
+        // Função para gerar o QR Code (lógica anterior)
+        async function generateQRCode() {
+            const nomeVendedor = document.getElementById('vendedorInput').value;
+            const nome = document.getElementById('nomeInput').value;
+            const telefone = document.getElementById('telefoneInput').value;
+            const quantidade = document.getElementById('quantidadeInput').value;
+            const qrcodeContainer = document.getElementById("qrcode-container");
+            qrcodeContainer.innerHTML = '';
+            
+            if (!nomeVendedor || !nome || !telefone || !quantidade) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            const data = {
+                nomeVendedor: nomeVendedor,
+                nome: nome,
+                telefone: telefone,
+                quantidade: parseInt(quantidade)
+            };
+
+            try {
+                const response = await fetch(createApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                
+                if (!response.ok) throw new Error('Falha na requisição: ' + response.statusText);
+
+                const uuid = await response.text();
+                new QRCode(qrcodeContainer, {
+                    text: uuid,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                console.log("QR Code gerado com sucesso para o UUID: " + uuid);
+            } catch (error) {
+                console.error('Erro ao gerar o QR Code:', error);
+                alert("Ocorreu um erro ao gerar o QR Code. Verifique o console para mais detalhes.");
+            }
+        }
+
+        // Variável global para armazenar a instância do leitor
+        let html5QrCode;
+
+        // Função para iniciar o leitor de QR Code
+        function startQrCodeReader() {
+            const resultTextElement = document.getElementById("result-text");
+            resultTextElement.textContent = "Aguardando leitura...";
+
+            // Reinicia o leitor caso já tenha sido iniciado
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+                });
+                return;
+            }
+
+            // Cria uma nova instância se for a primeira vez
+            if (!html5QrCode) {
+                 html5QrCode = new Html5Qrcode("reader");
+            }
+            
+            const qrCodeSuccessCallback = async (decodedText) => {
+                await html5QrCode.stop();
+                resultTextElement.textContent = "QR Code lido! Validando...";
+                
+                try {
+                    const response = await fetch(`${validateApiUrl}${decodedText}`, {
+                        method: 'POST',
+                    });
+
+                    if (response.ok) {
+                        resultTextElement.textContent = "Validação realizada com sucesso!";
+                        resultTextElement.className = "success";
+                    } else {
+                        resultTextElement.textContent = "Erro na validação. UUID não encontrado ou já retirado.";
+                        resultTextElement.className = "failure";
+                    }
+                } catch (error) {
+                    console.error('Erro na requisição de validação:', error);
+                    resultTextElement.textContent = "Erro de conexão com o servidor.";
+                    resultTextElement.className = "failure";
+                }
+            };
+            
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            // Inicia o leitor
+            html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+        }
+    </script>
+</body>
+</html>
