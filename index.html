@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,13 +16,16 @@
             margin: 0;
             background-color: #f0f0f0;
         }
+
         /* Novo estilo para o contêiner principal */
         .main-content {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            gap: 20px; /* Espaço entre os cards */
+            gap: 20px;
+            /* Espaço entre os cards */
         }
+
         .container {
             background-color: #ffffff;
             padding: 2rem;
@@ -32,7 +36,9 @@
             flex-direction: column;
             gap: 15px;
         }
-        input, button {
+
+        input,
+        button {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -40,15 +46,18 @@
             width: 100%;
             box-sizing: border-box;
         }
+
         button {
             background-color: #007BFF;
             color: white;
             border: none;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         .qrcode-section {
             display: flex;
             flex-direction: column;
@@ -56,32 +65,39 @@
             justify-content: center;
             gap: 15px;
         }
+
         #reader {
             width: 300px;
             height: 300px;
         }
+
         #result-text {
             font-weight: bold;
             padding: 10px;
             border-radius: 4px;
         }
+
         .success {
             background-color: #d4edda;
             color: #155724;
         }
+
         .failure {
             background-color: #f8d7da;
             color: #721c24;
         }
+
         /* Mídia query para telas menores */
         @media (max-width: 768px) {
             .main-content {
-                flex-direction: column; /* Volta para a coluna em telas pequenas */
+                flex-direction: column;
+                /* Volta para a coluna em telas pequenas */
                 align-items: center;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="main-content">
         <div class="container">
@@ -98,7 +114,7 @@
 
             <label for="quantidadeInput">Quantidade:</label>
             <input type="text" id="quantidadeInput" placeholder="Quantidade">
-            
+
             <button onclick="generateQRCode()">Gerar QR Code</button>
 
             <div id="qrcode-container">
@@ -132,7 +148,7 @@
             const quantidade = document.getElementById('quantidadeInput').value;
             const qrcodeContainer = document.getElementById("qrcode-container");
             qrcodeContainer.innerHTML = '';
-            
+
             if (!nomeVendedor || !nome || !telefone || !quantidade) {
                 alert("Por favor, preencha todos os campos.");
                 return;
@@ -151,7 +167,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data),
                 });
-                
+
                 if (!response.ok) throw new Error('Falha na requisição: ' + response.statusText);
 
                 const uuid = await response.text();
@@ -188,21 +204,26 @@
 
             // Cria uma nova instância se for a primeira vez
             if (!html5QrCode) {
-                 html5QrCode = new Html5Qrcode("reader");
+                html5QrCode = new Html5Qrcode("reader");
             }
-            
+
             const qrCodeSuccessCallback = async (decodedText) => {
                 await html5QrCode.stop();
                 resultTextElement.textContent = "QR Code lido! Validando...";
-                
+
                 try {
                     const response = await fetch(`${validateApiUrl}${decodedText}`, {
                         method: 'POST',
                     });
 
                     if (response.ok) {
-                        resultTextElement.textContent = "Validação realizada com sucesso!";
-                        resultTextElement.className = "success";
+                        if (response.body == true) {
+                            resultTextElement.textContent = "Validação realizada com sucesso!";
+                            resultTextElement.className = "success";
+                        } else {
+                            resultTextElement.textContent = "Erro na validação. UUID não encontrado ou já retirado.";
+                            resultTextElement.className = "failure";
+                        }
                     } else {
                         resultTextElement.textContent = "Erro na validação. UUID não encontrado ou já retirado.";
                         resultTextElement.className = "failure";
@@ -213,12 +234,13 @@
                     resultTextElement.className = "failure";
                 }
             };
-            
+
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-            
+
             // Inicia o leitor
             html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
         }
     </script>
 </body>
+
 </html>
