@@ -81,6 +81,17 @@
                 align-items: center;
             }
         }
+        /* Estilo para a nova seção de informações */
+        .info-container {
+            text-align: left;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .info-container p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -101,6 +112,10 @@
             <input type="text" id="quantidadeInput" placeholder="Quantidade">
             
             <button onclick="generateQRCode()">Gerar QR Code</button>
+
+            <div id="info-container" class="info-container" style="display:none;">
+                <!-- As informações aparecerão aqui -->
+            </div>
 
             <div id="qrcode-container">
                 <!-- O QR Code será gerado aqui -->
@@ -131,9 +146,14 @@
             const nome = document.getElementById('nomeInput').value;
             const telefone = document.getElementById('telefoneInput').value;
             const quantidade = document.getElementById('quantidadeInput').value;
-            const qrcodeContainer = document.getElementById("qrcode-container");
-            qrcodeContainer.innerHTML = '';
             
+            const infoContainer = document.getElementById("info-container");
+            const qrcodeContainer = document.getElementById("qrcode-container");
+            
+            qrcodeContainer.innerHTML = '';
+            infoContainer.innerHTML = '';
+            infoContainer.style.display = 'none';
+
             if (!nomeVendedor || !nome || !telefone || !quantidade) {
                 alert("Por favor, preencha todos os campos.");
                 return;
@@ -156,6 +176,15 @@
                 if (!response.ok) throw new Error('Falha na requisição: ' + response.statusText);
 
                 const uuid = await response.text();
+                
+                // Preenche o contêiner de informações
+                infoContainer.innerHTML = `
+                    <p><strong>Nome:</strong> ${nome}</p>
+                    <p><strong>Telefone:</strong> ${telefone}</p>
+                    <p><strong>Quantidade:</strong> ${quantidade}</p>
+                `;
+                infoContainer.style.display = 'block';
+
                 new QRCode(qrcodeContainer, {
                     text: uuid,
                     width: 256,
