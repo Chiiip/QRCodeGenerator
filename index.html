@@ -212,22 +212,18 @@
                 resultTextElement.textContent = "QR Code lido! Validando...";
 
                 try {
-                    const response = await fetch(`${validateApiUrl}${decodedText}`, {
+                    await fetch(`${validateApiUrl}${decodedText}`, {
                         method: 'POST',
-                    });
-
-                    if (response.ok) {
-                        if (response.body == true) {
+                    }).then(response => response.json()).then(data => {
+                        if (data == true) {
                             resultTextElement.textContent = "Validação realizada com sucesso!";
                             resultTextElement.className = "success";
                         } else {
                             resultTextElement.textContent = "Erro na validação. UUID não encontrado ou já retirado.";
                             resultTextElement.className = "failure";
                         }
-                    } else {
-                        resultTextElement.textContent = "Erro na validação. UUID não encontrado ou já retirado.";
-                        resultTextElement.className = "failure";
-                    }
+                    });
+                    
                 } catch (error) {
                     console.error('Erro na requisição de validação:', error);
                     resultTextElement.textContent = "Erro de conexão com o servidor.";
