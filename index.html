@@ -91,6 +91,9 @@
             <label for="telefoneInput">Telefone:</label>
             <input type="text" id="telefoneInput" placeholder="Telefone">
 
+            <label for="nomeInput">E-mail:</label>
+            <input type="text" id="emailInput" placeholder="Email">
+
             <label for="quantidadeInput">Quantidade:</label>
             <input type="text" id="quantidadeInput" placeholder="Quantidade">
             
@@ -129,6 +132,7 @@
             const nome = document.getElementById('nomeInput').value;
             const telefone = document.getElementById('telefoneInput').value;
             const quantidade = document.getElementById('quantidadeInput').value;
+            const email = document.getElementById('emailInput').value;
             
             const infoContainer = document.getElementById("info-container");
             const qrcodeContainer = document.getElementById("qrcode-container");
@@ -137,7 +141,7 @@
             infoContainer.innerHTML = '';
             infoContainer.style.display = 'none';
 
-            if (!nomeVendedor || !nome || !telefone || !quantidade) {
+            if (!nomeVendedor || !nome || !telefone || !quantidade || !email) {
                 alert("Por favor, preencha todos os campos.");
                 return;
             }
@@ -146,7 +150,8 @@
                 nomeVendedor: nomeVendedor,
                 nome: nome,
                 telefone: telefone,
-                quantidade: parseInt(quantidade)
+                quantidade: parseInt(quantidade),
+                email: email
             };
 
             try {
