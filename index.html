@@ -41,7 +41,6 @@
         button:hover {
             background-color: #0056b3;
         }
-
         
         .qrcode-section {
             display: flex;
@@ -74,7 +73,16 @@
             flex-direction: column;
             background-color: #f0f0f0;
         }
-        
+        .radio-group {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
     </style>
 </head>
 <body>
@@ -96,6 +104,15 @@
 
             <label for="quantidadeInput">Quantidade:</label>
             <input type="text" id="quantidadeInput" placeholder="Quantidade">
+            
+            <div class="radio-group">
+                <label for="tipoMisto">
+                    <input type="radio" id="tipoMisto" name="tipoYakisoba" value="Misto" checked> Misto
+                </label>
+                <label for="tipoVegetariano">
+                    <input type="radio" id="tipoVegetariano" name="tipoYakisoba" value="Vegetariano"> Vegetariano
+                </label>
+            </div>
             
             <button onclick="generateQRCode()">Gerar QR Code</button>
 
@@ -133,6 +150,7 @@
             const telefone = document.getElementById('telefoneInput').value;
             const quantidade = document.getElementById('quantidadeInput').value;
             const email = document.getElementById('emailInput').value;
+            const tipoYakisoba = document.querySelector('input[name="tipoYakisoba"]:checked').value;
             
             const infoContainer = document.getElementById("info-container");
             const qrcodeContainer = document.getElementById("qrcode-container");
@@ -141,7 +159,7 @@
             infoContainer.innerHTML = '';
             infoContainer.style.display = 'none';
 
-            if (!nomeVendedor || !nome || !telefone || !quantidade || !email) {
+            if (!nomeVendedor || !nome || !telefone || !quantidade || !email || !tipoYakisoba) {
                 alert("Por favor, preencha todos os campos.");
                 return;
             }
@@ -151,7 +169,8 @@
                 nome: nome,
                 telefone: telefone,
                 quantidade: parseInt(quantidade),
-                email: email
+                email: email,
+                tipoYakisoba: tipoYakisoba
             };
 
             try {
@@ -170,6 +189,7 @@
                     <p><strong>Nome:</strong> ${nome}</p>
                     <p><strong>Telefone:</strong> ${telefone}</p>
                     <p><strong>Quantidade:</strong> ${quantidade}</p>
+                    <p><strong>Tipo:</strong> ${tipoYakisoba}</p>
                 `;
                 infoContainer.style.display = 'block';
 
